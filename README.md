@@ -1,5 +1,4 @@
-# btt_cb1
-Tutorial para a placa BTT CB1 para documentar a instalação do Octoprint
+# Tutorial para a placa BTT CB1 para documentar a instalação do Octoprint
 
 ## Documentação detalhada para cada release e as imagens para instalação mínima e a instalação com Klipper
 [Documentação Github no da placa BTT CB1](https://github.com/bigtreetech/CB1/releases)
