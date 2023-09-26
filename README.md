@@ -8,4 +8,6 @@
 
 ### Diversos links na descrição do video
 [Setting up OctoPrint on a Raspberry Pi running Raspberry Pi OS](https://community.octoprint.org/t/setting-up-octoprint-on-a-raspberry-pi-running-raspberry-pi-os-debian/2337)
+
+
 [Testing the Pi substitute BTT CB1 and Manta M4P/M8P boards with Octoprint & Klipper](https://www.youtube.com/watch?v=vZIOZTce7NI&t=487s)
