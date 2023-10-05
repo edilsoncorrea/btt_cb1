@@ -11,3 +11,5 @@
 
 
 [Testing the Pi substitute BTT CB1 and Manta M4P/M8P boards with Octoprint & Klipper](https://www.youtube.com/watch?v=vZIOZTce7NI&t=487s)
+
+[Mapeamento GPIO CB1 e PI4](https://wolf-u.li/en/bigtreetech-40-pin-gpio-cm4-cb1-mapping/)
