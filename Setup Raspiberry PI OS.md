@@ -1,472 +1,92 @@
-# Setting up OctoPrint on a Raspberry Pi running Raspberry Pi OS (Debian)
+### Tutorial: Instalação Manual do OctoPrint no CB1 (Placa Não-Raspberry Pi)
 
-**Important:** This guide expects you to have a more than basic grasp of the Linux command line. In order to follow it you'll need to know:
+O CB1 (Control Board One) da Big Tree Tech é um substituto para o Raspberry Pi (especificamente o Compute Module 4). Como o **kernel do CB1 é diferente** do kernel do Raspberry Pi, **não é possível** utilizar a imagem de cartão SD pré-configurada do OctoPi. Consequentemente, a instalação do OctoPrint no CB1 deve ser realizada manualmente via SSH, um processo que é **muito mais trabalhoso** do que o uso de uma imagem pré-fabricada.
 
-  * how to issue commands on the shell,
-  * how to edit a text file from the command line,
-  * what the difference is between your user account (e.g. `pi`) and the superuser account `root`,
-  * how to SSH into your Pi (so you don't need to also attach keyboard and monitor),
-  * how to use Git and
-  * how to use the Internet to help you if you run into problems.
+Este tutorial descreve o processo de instalação manual do OctoPrint no CB1, usando a imagem mínima da BTT e as instruções manuais do fórum OctoPrint.
 
-## Basic Installation
+#### Etapa 1: Preparação e Instalação da Imagem Mínima do SO (Fonte: GitHub BTT CB1)
 
-For the basic package you'll need Python 3.9, 3.10, 3.10, 3.11, 3.12 or 3.13 (one of these is probably installed by default) and pip.
+A primeira etapa é obter o sistema operacional correto para o CB1 no repositório GitHub da Big Tree Tech (BTT):
 
-Make sure you are using the correct version - it might be installed as `python3`, not `python`. To check:
+1.  **Obtenção da Imagem Mínima:** Você deve buscar a **versão mínima** da imagem de sistema, que é baseada no sistema operacional Debian Linux.
+    *   Exemplos de imagens mínimas de kernel disponíveis incluem: `CB1_Debian11_bullseye_minimal_kernel5.16_20230215.img.xz` e `CB1_Debian11_bullseye_minimal_kernel5.16_20220929.img.xz`, que adicionam apenas o *shell script* para configuração de Wi-Fi via cartão SD, baseadas no Debian puro.
+    *   Para o CB1, a BTT mantém sistemas Kernel 5.16. Imagens com o Clipper pré-instalado (como Klipper, Moonraker, Mainsail e KlipperScreen) também estão disponíveis, mas a instalação manual do OctoPrint exige o uso da **imagem mínima**.
+2.  **Flash da Imagem:** Use o **Raspberry Pi Imager** oficial. Selecione a imagem mínima baixada (escolhendo *custom image* ou imagem personalizada do seu computador) e grave-a no cartão micro SD (o tamanho recomendado é de 16 GB). Ignore quaisquer mensagens solicitando a formatação do cartão após o processo.
+3.  **Configuração Wi-Fi:** O cartão SD terá uma partição acessível. Edite o arquivo **`system.cfg`** e insira o nome da sua rede Wi-Fi e a senha.
+    *   O *shell script* de Wi-Fi é otimizado no CB1 para corrigir problemas, como Wi-Fi com criptografia híbrida WAP2/WAP3 ou SSIDs contendo espaços (por exemplo, `WIFI_SSID="CB1 Tester"`).
+4.  **Boot Inicial:** Insira o CB1 no adaptador Pi 4B e o cartão SD no adaptador. Ligue-o.
+5.  **Acesso Terminal/SSH:** Após o *boot*, você pode acessar o terminal ou usar o SSH (via Putty).
+    *   Os detalhes de login padrão são: **Nome de usuário: biqu** e **Senha: biqu**.
+	*   A versão mais novo da imagem mudou o processo de definição de senha. Agora, após a instalação e primeiro acesso é necessário definir uma senha nova.
+    *   Se estiver usando uma versão antiga do SO, pode ser necessário desativar o acesso SSH para o usuário `root` (o acesso SSH é desativado por padrão para o usuário `root` nas versões mais recentes do SO BTT).
 
-```bash
-python --version
-```
+#### Etapa 2: Acesso via SSH e Instalação Manual do OctoPrint
 
-and if that doesn't look fine
+Como você não pode usar a imagem OctoPi, você deve seguir a seção **"installing manually"** (instalação manual) nas instruções do OctoPrint. O guia de instalação manual da comunidade OctoPrint pressupõe que o usuário tenha um **entendimento mais do que básico da linha de comando Linux**.
 
-```bash
-python3 --version
-```
+1.  **Processo de Instalação:** A instalação envolve **copiar e colar os comandos, um de cada vez,** no terminal Putty (SSH) e executá-los.
+2.  **Instalação de Dependências:** O guia manual exige a instalação de dependências como Python 3.9 a 3.13 e `pip`, e a criação de um ambiente virtual (`venv`) para evitar conflitos de dependência. Comandos típicos incluem:
+    ```bash
+    cd ~
+    sudo apt update
+    sudo apt install python3 python3-pip python3-dev python3-setuptools python3-venv git libyaml-dev build-essential libffi-dev libssl-dev
+    mkdir OctoPrint && cd OctoPrint
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install --upgrade pip wheel
+    pip install octoprint
+    ```
+3.  **Configuração de Usuário Crítica (CB1):** Ao configurar os usuários, você deve **mudar o nome de usuário de `pi` para `biqu`**. O usuário `pi` não existe no CB1.
+    *   O guia padrão do OctoPrint usa o usuário `pi` para conceder acesso às portas seriais (tty e dialout), mas no CB1 você deve adaptar isso para o usuário `biqu`.
+4.  **Início do Servidor:** Após a instalação, você pode iniciar o servidor OctoPrint usando o comando `octoprint serve` dentro do ambiente virtual.
+5.  **Resultado:** Após concluir as etapas, reinicie o sistema.
 
-Installing OctoPrint should be done within a virtual environment, rather than an OS wide install, to help prevent dependency conflicts. To setup Python, dependencies and the virtual environment, run:
+Agradeço o feedback! É fundamental incluir as etapas opcionais, porém cruciais, para uma experiência completa e segura com o OctoPrint, especialmente a configuração da câmera e o uso de um *reverse proxy*.
 
-```bash
-cd ~
-sudo apt update
-sudo apt install python3 python3-pip python3-dev python3-setuptools python3-venv git libyaml-dev build-essential libffi-dev libssl-dev
-mkdir OctoPrint && cd OctoPrint
-python3 -m venv venv
-source venv/bin/activate
-```
+A seguir, apresento a **revisão e expansão da `#### Etapa 3: Configuração e Uso Final`** do seu tutorial de instalação manual do OctoPrint no CB1, incorporando os detalhes sobre *Autostart*, *HAProxy*, *Webcam* e *Comandos de Sistema*, conforme detalhado nas fontes.
 
-OctoPrint and it's Python dependencies can then be installed using `pip`:
+***
 
-```bash
-pip install --upgrade pip wheel
-pip install octoprint
-```
+### #### Etapa 3: Configuração e Uso Final (Expandido)
 
-> **Note:** If this installs an old version of OctoPrint, pip probably still has something cached. In that case add `--no-cache-dir` to the install command, e.g. `pip install --no-cache-dir octoprint`.
+Após a conclusão da instalação manual do OctoPrint via SSH, é necessário configurar o acesso, o início automático e, opcionalmente, a *webcam* e o *proxy reverso* para otimizar o uso do CB1.
 
-To make this permanent, clean `pip`'s cache:
+1.  **Acesso à Interface Web:**
+    *   Insira o endereço IP no seu navegador (ex: `http://<IP do CB1>:5000`) para acessar o assistente de configuração (*setup wizard*) do OctoPrint.
+    *   Embora possa haver algumas etapas de configuração extras em comparação com a imagem pré-fabricada do OctoPi, o resultado é uma **versão funcional do OctoPrint**.
 
-```bash
-rm -r ~/.cache/pip
-```
+2.  **Configuração de Início Automático (*Autostart*):**
+    Para que o OctoPrint inicie automaticamente no *boot* (o que é recomendado, já que o processo manual de instalação não o configura por padrão), crie o arquivo `/etc/systemd/system/octoprint.service`.
 
-You may need to add the pi user to the `dialout` group and `tty` so that the user can access the serial ports, before starting OctoPrint:
+    *   **Adaptação CB1:** No arquivo de serviço, o parâmetro `User` deve ser definido como **`BQ`** (o nome de usuário padrão do CB1) em vez de `pi`.
+    *   Após criar o arquivo, habilite o serviço usando `sudo systemctl enable octoprint.service`.
 
-```bash
-sudo usermod -a -G tty pi
-sudo usermod -a -G dialout pi
-```
+3.  **Configuração de Usuário para Portas Seriais e Comandos:**
+    Para garantir que o usuário **`BQ`** tenha acesso às portas seriais (necessário para comunicação com a placa da impressora), e para que o OctoPrint possa executar comandos de reinicialização e desligamento, siga estas etapas:
 
-> **Note:** You may have to log out and back in again for these changes to become effective.
+    *   **Portas Seriais:** Embora não explicitamente detalhado para o CB1, o guia de instalação manual indica que o usuário deve ser adicionado aos grupos `tty` e `dialout` para acessar as portas seriais.
+        *   **Adaptação CB1:** Adapte os comandos de grupo substituindo `pi` por `BQ`.
+    *   **Comandos de Sistema:** No UI do OctoPrint, em `Settings > Commands`, configure os comandos para reiniciar o OctoPrint (`sudo service octoprint restart`), reiniciar o sistema (`sudo shutdown -r now`) e desligar o sistema (`sudo shutdown -h now`).
+    *   **Sudoers:** Se for necessário rodar comandos sem senha, o guia sugere adicionar regras *sudoers* para permitir que o usuário **`BQ`** utilize `shutdown` e `service` sem exigir senha.
 
-## Starting the server for the first time
+4.  **Acessibilidade na Porta 80 e Uso de HAProxy (*Reverse Proxy*):**
+    É recomendado usar o **HAProxy** como um *reverse proxy* em vez de configurar o OctoPrint para rodar na porta 80. Isso tem diversas vantagens, como: evitar que o OctoPrint precise de privilégios de `root` para se ligar à porta 80 e permitir que o *stream* de vídeo (`mjpg-streamer`) também seja acessível na porta 80.
 
-You should then be able to start the OctoPrint server using the `octoprint serve` command:
+    *   **Instalação do HAProxy:** Instale o pacote usando `sudo apt install haproxy`.
+    *   **Configuração:** O CB1 usa uma imagem baseada em Debian 11 (Bullseye), portanto, a configuração do HAProxy 2.x deve ser utilizada em `/etc/haproxy/haproxy.cfg`.
+        *   Esta configuração roteia as requisições para o OctoPrint (`127.0.0.1:5000`) e permite que o *mjpg-streamer* (webcam) seja acessível pelo *path* `/webcam/` no endereço da porta 80.
+    *   **Habilitação:** Modifique `/etc/default/haproxy` e defina **`ENABLED`** como **`1`**. Inicie o serviço com `sudo service haproxy start`.
+    *   **URL Localhost:** Para segurança adicional, após configurar o HAProxy, você pode configurar o OctoPrint para escutar apenas no *loopback interface* (localhost) adicionando: `server: host: 127.0.0.1` no arquivo `~/.octoprint/config.yaml`.
 
-```bash
-pi@raspberrypi:~ $ ~/OctoPrint/venv/bin/octoprint serve
-2020-11-03 17:39:17,979 - octoprint.startup - INFO - ***************************
-2020-11-03 17:39:17,980 - octoprint.startup - INFO - Starting OctoPrint 1.4.2
-2020-11-03 17:39:17,980 - octoprint.startup - INFO - ***************************
-```
+5.  **Instalação Opcional de Webcam (MJPG-Streamer):**
+    Para suporte à *webcam* e *timelapse*, é necessário baixar e compilar o **MJPG-Streamer** manualmente.
 
-Try it out\! Access the server by heading to `http://<pi's IP>:5000` and you should be greeted with the OctoPrint UI.
+    *   **Instalação de Dependências:** Instale as dependências necessárias (que dependem da versão do Debian). A lista de pacotes para Debian atual inclui `subversion`, `libjpeg62-turbo-dev`, `imagemagick`, `ffmpeg`, `libv4l-dev`, `cmake`.
+    *   **Compilação:** Clone o repositório (`git clone https://github.com/jacksonliam/mjpg-streamer.git`), navegue até o diretório experimental e execute `make`.
+    *   **Configuração no OctoPrint:** Se estiver usando o HAProxy, no OctoPrint (Webcam & Timelapse settings), o **Stream URL** deve ser alterado para uma URL relativa: `/webcam/?action=stream`.
+        *   O **Snapshot URL** deve ser mantido como `http://127.0.0.1:8080/?action=snapshot`.
+        *   O `Path to FFMPEG` é geralmente `/usr/bin/ffmpeg`.
+    *   **Início Automático da Webcam:** Para iniciar a *webcam* automaticamente, crie um *script* `webcamDaemon` e um arquivo de serviço `webcamd.service` em `/etc/systemd/system/`. Novamente, assegure-se de que o campo `User` no arquivo `webcamd.service` seja configurado para **`BQ`**.
+    *   **Segurança (Porta 8080):** Como o `mjpg-streamer` não permite o *bind* para o *localhost* apenas, se o OctoPrint estiver acessível pela internet, é crucial bloquear o acesso à porta 8080 de todas as fontes exceto o *localhost* usando **`iptables`**. Use comandos `iptables` e `ip6tables` e torne-os persistentes instalando `iptables-persistent` e salvando as regras.
 
-## Automatic start up
-
-Create a file `/etc/systemd/system/octoprint.service` and put this into it:
-
-```ini
-[Unit]
-Description=The snappy web interface for your 3D printer
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Environment="LC_ALL=C.UTF-8"
-Environment="LANG=C.UTF-8"
-Type=exec
-User=pi
-ExecStart=/home/pi/OctoPrint/venv/bin/octoprint serve
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Adjust the paths to your `octoprint` binary as needed. If you set it up in a virtualenv as described above make sure your `/etc/systemd/system/octoprint.service` looks like this:
-
-```ini
-ExecStart=/home/pi/OctoPrint/venv/bin/octoprint
-```
-
-Then add the script to autostart using `sudo systemctl enable octoprint.service`.
-
-This will also allow you to start/stop/restart the OctoPrint daemon via
-
-```bash
-sudo service octoprint {start|stop|restart}
-```
-
-## Make everything accessible on port 80
-
-If you want to have nicer URLs or simply need OctoPrint to run on port 80 (http's default port) due to some network restrictions, I recommend using HAProxy as a reverse proxy instead of configuring OctoPrint to run on port 80.
-
-Setup on Raspbian is as follows:
-
-```bash
-pi@raspberrypi ~ $ sudo apt install haproxy
-```
-
-I'm using the following configuration in `/etc/haproxy/haproxy.cfg`:
-
-> **Warning:** Make sure you use the correct configuration for your version of Haproxy. Shown below is the configuration for Raspberry Pi OS Bullseye, which uses Haproxy 2.x and is the most up to date RPi OS.
-
-### Haproxy 2.x (Debian 11, Bullseye etc.)
-
-```haproxy
-global
-        maxconn 4096
-        user haproxy
-        group haproxy
-        daemon
-        log 127.0.0.1 local0 debug
-
-defaults
-        log     global
-        mode    http
-        option  httplog
-        option  dontlognull
-        retries 3
-        option redispatch
-        option http-server-close
-        option forwardfor
-        maxconn 2000
-        timeout connect 5s
-        timeout client  15min
-        timeout server  15min
-
-frontend public
-        bind :::80 v4v6
-        use_backend webcam if { path_beg /webcam/ }
-        default_backend octoprint
-
-backend octoprint
-        option forwardfor
-        server octoprint1 127.0.0.1:5000
-
-backend webcam
-        http-request replace-path /webcam/(.*)   /\1
-        server webcam1 127.0.0.1:8080
-```
-
-### Haproxy 1.x (Debian 10, Buster, etc)
-
-\<details\>
-\<summary\>Click to expand Haproxy 1.x configuration\</summary\>
-
-```haproxy
-global
-        maxconn 4096
-        user haproxy
-        group haproxy
-        daemon
-        log 127.0.0.1 local0 debug
-
-defaults
-        log     global
-        mode    http
-        option  httplog
-        option  dontlognull
-        retries 3
-        option redispatch
-        option http-server-close
-        option forwardfor
-        maxconn 2000
-        timeout connect 5s
-        timeout client  15min
-        timeout server  15min
-
-frontend public
-        bind :::80 v4v6
-        use_backend webcam if { path_beg /webcam/ }
-        default_backend octoprint
-
-backend octoprint
-        reqrep ^([^\ :]*)\ /(.*)     \1\ /\2
-        option forwardfor
-        server octoprint1 127.0.0.1:5000
-
-backend webcam
-        reqrep ^([^\ :]*)\ /webcam/(.*)     \1\ /\2
-        server webcam1 127.0.0.1:8080
-```
-
-\</details\>
-
-This will make OctoPrint accessible under `http://<your Raspi's IP>/` and make mjpg-streamer accessible under `http://<your Raspi's IP>/webcam/`. You'll also need to modify `/etc/default/haproxy` and enable HAProxy by setting `ENABLED` to `1`. After that you can start HAProxy by issuing the following command:
-
-```bash
-sudo service haproxy start
-```
-
-Pointing your browser to `http://<your Raspi's IP>` should greet you with OctoPrint's UI. Now open the settings and switch to the webcam tab or alternatively open `~/.octoprint/config.yaml`. Set the webcam's stream URL from `http://<your Raspi's IP>:8080/?action=stream` to `/webcam/?action=stream` (leave the snapshotUrl at `http://127.0.0.1:8080/?action=snapshot`\!) and reload the page.
-
-If everything works you can add the following lines to `~/.octoprint/config.yaml` (just create it if it doesn't exist yet) to make the server bind only to the loopback interface:
-
-```yaml
-server:
-    host: 127.0.0.1
-```
-
-Restart the server. OctoPrint should still be available on port 80, including the webcam feed (if enabled).
-
-## Updating & changing release channels & rolling back
-
-OctoPrint should offer to update itself automatically. If you want or need to perform any of this manually, perform the following commands to install `<version>` of OctoPrint:
-
-```bash
-source ~/OctoPrint/venv/bin/activate
-pip install octoprint==<version>
-```
-
-e.g.
-
-```bash
-source ~/OctoPrint/venv/bin/activate
-pip install octoprint==1.4.0
-```
-
-## Support restart/shutdown through OctoPrint's system menu
-
-In the UI, under **Settings \> Commands**, configure the following commands:
-
-  * **Restart OctoPrint:** `sudo service octoprint restart`
-  * **Restart system:** `sudo shutdown -r now`
-  * **Shutdown system:** `sudo shutdown -h now`
-
-> **Note:** If you disabled Raspbian's default behaviour of allowing the `pi` user passwordless sudo for every command, you'll need to explicitly allow the `pi` user passwordless sudo access to the `/sbin/shutdown` program.
-
-Create a file `/etc/sudoers.d/octoprint-shutdown` (as root) with the following contents:
-
-```text
-pi ALL=NOPASSWD: /sbin/shutdown
-```
-
-Create another file `/etc/sudoers.d/octoprint-service` (as root) with the following contents:
-
-```text
-pi ALL=NOPASSWD: /usr/sbin/service
-```
-
-## Optional: Webcam
-
-If you also want webcam and timelapse support, you'll need to download and compile MJPG-Streamer:
-
-```bash
-cd ~
-sudo apt install subversion libjpeg62-turbo-dev imagemagick ffmpeg libv4l-dev cmake
-git clone https://github.com/jacksonliam/mjpg-streamer.git
-cd mjpg-streamer/mjpg-streamer-experimental
-export LD_LIBRARY_PATH=.
-make
-```
-
-> **Heads-up:** The required packages depend on the underlying version of Debian\! The above is what should work on the current Debian Stretch or Buster based images of Raspbian.
-
-For **Jessie** use:
-`sudo apt install subversion libjpeg62-turbo-dev imagemagick libav-tools libv4l-dev cmake`
-
-For **Wheezy or older** use:
-`sudo apt install subversion libjpeg8-dev imagemagick libav-tools libv4l-dev cmake`
-
-You should then be able to start the webcam server using:
-
-```bash
-./mjpg_streamer -i "./input_uvc.so" -o "./output_http.so"
-```
-
-For some webcams (including the PS3 Eye) you'll need to force the YUV mode:
-
-```bash
-./mjpg_streamer -i "./input_uvc.so -y" -o "./output_http.so"
-```
-
-If you want to use the official RaspberryPi Camera Module you need to run:
-
-```bash
-./mjpg_streamer -i "./input_raspicam.so -fps 5" -o "./output_http.so"
-```
-
-To configure the stream in OctoPrint, open the settings dialog and modify the following entries under **Webcam & Timelapse**:
-
-  * **Stream URL:** `/webcam/?action=stream`
-  * **Snapshot URL:** `http://127.0.0.1:8080/?action=snapshot`
-  * **Path to FFMPEG:** `/usr/bin/ffmpeg`
-
-> **Heads-up:** If you are using a Raspbian image based on Debian Jessie or older, "Path to FFMPEG" should instead be `/usr/bin/avconv`.
-
-## Optional: Webcam Automatic Startup
-
-If you want mjpg-streamer to automatically startup on boot:
-
-Create a new file at `/home/pi/scripts/webcamDaemon` (ie. run `nano /home/pi/scripts/webcamDaemon`), with the following content:
-
-```bash
-#!/bin/bash
-
-MJPGSTREAMER_HOME=/home/pi/mjpg-streamer/mjpg-streamer-experimental
-MJPGSTREAMER_INPUT_USB="input_uvc.so"
-MJPGSTREAMER_INPUT_RASPICAM="input_raspicam.so"
-
-# init configuration
-camera="auto"
-camera_usb_options="-r 640x480 -f 10"
-camera_raspi_options="-fps 10"
-
-if [ -e "/boot/octopi.txt" ]; then
-    source "/boot/octopi.txt"
-fi
-
-# runs MJPG Streamer, using the provided input plugin + configuration
-function runMjpgStreamer {
-    input=$1
-    pushd $MJPGSTREAMER_HOME
-    echo Running ./mjpg_streamer -o "output_http.so -w ./www" -i "$input"
-    LD_LIBRARY_PATH=. ./mjpg_streamer -o "output_http.so -w ./www" -i "$input"
-    popd
-}
-
-# starts up the RasPiCam
-function startRaspi {
-    logger "Starting Raspberry Pi camera"
-    runMjpgStreamer "$MJPGSTREAMER_INPUT_RASPICAM $camera_raspi_options"
-}
-
-# starts up the USB webcam
-function startUsb {
-    logger "Starting USB webcam"
-    runMjpgStreamer "$MJPGSTREAMER_INPUT_USB $camera_usb_options"
-}
-
-# we need this to prevent the later calls to vcgencmd from blocking
-# I have no idea why, but that's how it is...
-vcgencmd version
-
-# echo configuration
-echo camera: $camera
-echo usb options: $camera_usb_options
-echo raspi options: $camera_raspi_options
-
-# keep mjpg streamer running if some camera is attached
-while true; do
-    if [ -e "/dev/video0" ] && { [ "$camera" = "auto" ] || [ "$camera" = "usb" ] ; }; then
-        startUsb
-    elif [ "`vcgencmd get_camera`" = "supported=1 detected=1" ] && { [ "$camera" = "auto" ] || [ "$camera" = "raspi" ] ; }; then
-        startRaspi
-    fi
-    sleep 120
-done
-```
-
-Make sure the file is executable:
-
-```bash
-chmod +x /home/pi/scripts/webcamDaemon
-```
-
-And then create another new file at `/etc/systemd/system/webcamd.service` (`sudo nano /etc/systemd/system/webcamd.service`), with these lines:
-
-```ini
-[Unit]
-Description=Camera streamer for OctoPrint
-After=network-online.target OctoPrint.service
-Wants=network-online.target
-
-[Service]
-Type=simple
-User=pi
-ExecStart=/home/pi/scripts/webcamDaemon
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Tell the system to read the new file:
-
-```bash
-sudo systemctl daemon-reload
-```
-
-And finally enable the service:
-
-```bash
-sudo systemctl enable webcamd
-```
-
-If you want to be able to start and stop the webcam server through OctoPrint's system menu, add the following to `.octoprint/config.yaml`:
-
-```yaml
-system:
-  actions:
-   - action: streamon
-     command: sudo systemctl start webcamd
-     confirm: false
-     name: Start video stream
-   - action: streamoff
-     command: sudo systemctl stop webcamd
-     confirm: false
-     name: Stop video stream
-```
-
-> **Note:** mjpegstreamer does not allow to bind to a specific interface. If you want your octoprint instance to be reachable from the internet you need to block access to port 8080 from all sources except localhost using `iptables` rules.
-
-## Optional: Touch UI
-
-*Touch UI has been abandoned. Check here for potential updates.*
-
-Install the plugin using the plugin manager. If you want to use this for a local LCD, first install `xautomation` and `epiphany-browser`:
-
-```bash
-sudo apt install epiphany-browser xautomation
-```
-
-Next, create a file `startTouchUI.sh` in `~/` and add:
-
-```bash
-#!/bin/bash
-function check_octoprint {
-    pgrep -n octoprint > /dev/null
-    return $?
-}
-
-until check_octoprint
-do
-    sleep 5
-done
-
-sleep 5s
-epiphany-browser http://127.0.0.1:5000 --display=:0 &
-sleep 10s;
-xte "key F11" -x:0
-```
-
-Make it executable: `chmod +x startTouchUI.sh` and add the following to `~/.config/lxsession/LXDE-pi/autostart`:
-
-```text
-@/home/pi/startTouchUI.sh
-```
-
-## Optional: Reach your printer by typing its name (Avahi)
-
-Installation is simple, on your RasPi just type:
-
-```bash
-sudo apt update && sudo apt install avahi-daemon
-```
-
-The next step is to change the hostname of your RasPi into something more printer specific (e.g. `<yourprinter>`) via editing the files `/etc/hostname` and `/etc/hosts` on your RasPi.
-
-Change the default name into `<yourprinter>` in the hostname-file via `sudo nano /etc/hostname` and do the same in the hosts-file via `sudo nano /etc/hosts`.
-
-Now restart your RasPi via `sudo reboot`. You can now reach your RasPi running OctoPrint within your network by pointing your browser to `<yourprinter>.local`.
+> **Observação de Desempenho:** O CB1 (com seu processador Cortex A53 e 1 GB de RAM) é comparável em especificações a um Raspberry Pi 3B, o que é **suficientemente bom para rodar o OctoPrint**. No entanto, a necessidade de instalação manual o torna menos conveniente do que o Raspberry Pi, onde uma imagem pré-feita está disponível.
