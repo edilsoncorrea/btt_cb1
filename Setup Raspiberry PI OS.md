@@ -45,9 +45,7 @@ Agradeço o feedback! É fundamental incluir as etapas opcionais, porém cruciai
 
 A seguir, apresento a **revisão e expansão da `#### Etapa 3: Configuração e Uso Final`** do seu tutorial de instalação manual do OctoPrint no CB1, incorporando os detalhes sobre *Autostart*, *HAProxy*, *Webcam* e *Comandos de Sistema*, conforme detalhado nas fontes.
 
-***
-
-### #### Etapa 3: Configuração e Uso Final (Expandido)
+#### Etapa 3: Configuração e Uso Final (Expandido)
 
 Após a conclusão da instalação manual do OctoPrint via SSH, é necessário configurar o acesso, o início automático e, opcionalmente, a *webcam* e o *proxy reverso* para otimizar o uso do CB1.
 
