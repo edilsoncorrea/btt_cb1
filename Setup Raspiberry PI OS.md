@@ -56,16 +56,16 @@ Após a conclusão da instalação manual do OctoPrint via SSH, é necessário c
 2.  **Configuração de Início Automático (*Autostart*):**
     Para que o OctoPrint inicie automaticamente no *boot* (o que é recomendado, já que o processo manual de instalação não o configura por padrão), crie o arquivo `/etc/systemd/system/octoprint.service`.
 
-    *   **Adaptação CB1:** No arquivo de serviço, o parâmetro `User` deve ser definido como **`BQ`** (o nome de usuário padrão do CB1) em vez de `pi`.
+    *   **Adaptação CB1:** No arquivo de serviço, o parâmetro `User` deve ser definido como **`biqu`** (o nome de usuário padrão do CB1) em vez de `pi`.
     *   Após criar o arquivo, habilite o serviço usando `sudo systemctl enable octoprint.service`.
 
 3.  **Configuração de Usuário para Portas Seriais e Comandos:**
-    Para garantir que o usuário **`BQ`** tenha acesso às portas seriais (necessário para comunicação com a placa da impressora), e para que o OctoPrint possa executar comandos de reinicialização e desligamento, siga estas etapas:
+    Para garantir que o usuário **`biqu`** tenha acesso às portas seriais (necessário para comunicação com a placa da impressora), e para que o OctoPrint possa executar comandos de reinicialização e desligamento, siga estas etapas:
 
     *   **Portas Seriais:** Embora não explicitamente detalhado para o CB1, o guia de instalação manual indica que o usuário deve ser adicionado aos grupos `tty` e `dialout` para acessar as portas seriais.
-        *   **Adaptação CB1:** Adapte os comandos de grupo substituindo `pi` por `BQ`.
+        *   **Adaptação CB1:** Adapte os comandos de grupo substituindo `pi` por `biqu`.
     *   **Comandos de Sistema:** No UI do OctoPrint, em `Settings > Commands`, configure os comandos para reiniciar o OctoPrint (`sudo service octoprint restart`), reiniciar o sistema (`sudo shutdown -r now`) e desligar o sistema (`sudo shutdown -h now`).
-    *   **Sudoers:** Se for necessário rodar comandos sem senha, o guia sugere adicionar regras *sudoers* para permitir que o usuário **`BQ`** utilize `shutdown` e `service` sem exigir senha.
+    *   **Sudoers:** Se for necessário rodar comandos sem senha, o guia sugere adicionar regras *sudoers* para permitir que o usuário **`biqu`** utilize `shutdown` e `service` sem exigir senha.
 
 4.  **Acessibilidade na Porta 80 e Uso de HAProxy (*Reverse Proxy*):**
     É recomendado usar o **HAProxy** como um *reverse proxy* em vez de configurar o OctoPrint para rodar na porta 80. Isso tem diversas vantagens, como: evitar que o OctoPrint precise de privilégios de `root` para se ligar à porta 80 e permitir que o *stream* de vídeo (`mjpg-streamer`) também seja acessível na porta 80.
@@ -84,7 +84,8 @@ Após a conclusão da instalação manual do OctoPrint via SSH, é necessário c
     *   **Configuração no OctoPrint:** Se estiver usando o HAProxy, no OctoPrint (Webcam & Timelapse settings), o **Stream URL** deve ser alterado para uma URL relativa: `/webcam/?action=stream`.
         *   O **Snapshot URL** deve ser mantido como `http://127.0.0.1:8080/?action=snapshot`.
         *   O `Path to FFMPEG` é geralmente `/usr/bin/ffmpeg`.
-    *   **Início Automático da Webcam:** Para iniciar a *webcam* automaticamente, crie um *script* `webcamDaemon` e um arquivo de serviço `webcamd.service` em `/etc/systemd/system/`. Novamente, assegure-se de que o campo `User` no arquivo `webcamd.service` seja configurado para **`BQ`**.
+    *   **Início Automático da Webcam:** Para iniciar a *webcam* automaticamente, crie um *script* `webcamDaemon` e um arquivo de serviço `webcamd.service` em `/etc/systemd/system/`. Novamente, assegure-se de que o campo `User` no arquivo `webcamd.service` seja configurado para **`biqu`**.
     *   **Segurança (Porta 8080):** Como o `mjpg-streamer` não permite o *bind* para o *localhost* apenas, se o OctoPrint estiver acessível pela internet, é crucial bloquear o acesso à porta 8080 de todas as fontes exceto o *localhost* usando **`iptables`**. Use comandos `iptables` e `ip6tables` e torne-os persistentes instalando `iptables-persistent` e salvando as regras.
 
 > **Observação de Desempenho:** O CB1 (com seu processador Cortex A53 e 1 GB de RAM) é comparável em especificações a um Raspberry Pi 3B, o que é **suficientemente bom para rodar o OctoPrint**. No entanto, a necessidade de instalação manual o torna menos conveniente do que o Raspberry Pi, onde uma imagem pré-feita está disponível.
+
